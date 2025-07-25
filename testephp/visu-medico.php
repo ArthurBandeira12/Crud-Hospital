@@ -35,7 +35,7 @@ if (!$medico) {
         <p><strong>ID:</strong> <?= htmlspecialchars($medico['id']) ?></p>
         <p><strong>Nome:</strong> <?= htmlspecialchars($medico['nome']) ?></p>
         <p><strong>Especialidade:</strong> <?= htmlspecialchars($medico['especialidade']) ?></p>
-        <!-- Adicione outros campos se houver -->
+        
     </main>
 </body>
 </html>
