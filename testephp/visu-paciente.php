@@ -4,10 +4,29 @@ require_once 'authenticate.php';
 
 $id = $_GET['id'];
 
-
 $stmt = $pdo->prepare("SELECT pacientes.*, usuarios.username FROM pacientes LEFT JOIN usuarios ON pacientes.usuario_id = usuarios.id WHERE pacientes.id = ?");
 $stmt->execute([$id]);
 $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$imagemPath = '../storage/imagemusuario.webp';
+
+if (!empty($paciente['imagem_id'])) {
+    $stmtImagem = $pdo->prepare("SELECT path FROM imagens WHERE id = ?");
+    $stmtImagem->execute([$paciente['imagem_id']]);
+    $imagem = $stmtImagem->fetch(PDO::FETCH_ASSOC);
+    if ($imagem) {
+        
+        $imagemPath = '../storage/' . $imagem['path'] . '?v=' . time();
+    }
+}
+
+
+
+
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -23,7 +42,7 @@ $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
         <h1>Detalhes do Paciente</h1>
         <nav>
             <ul>
-                <li><a href="index.php">Home</a></li>
+                <li><a href="/index.php">Home</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li>Pacientes: 
                         <a href="/testephp/criarpaciente.php">Adicionar</a> | 
@@ -33,7 +52,6 @@ $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
                         <a href="/testephp/criarmedico.php">Adicionar</a> | 
                         <a href="/testephp/index-medico.php">Listar</a>
                     </li>
-                    
                     <li><a href="/testephp/logout.php">Logout (<?= $_SESSION['username'] ?>)</a></li>
                 <?php else: ?>
                     <li><a href="/testephp/user-login.php">Login</a></li>
@@ -44,11 +62,15 @@ $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
     </header>
     <main>
         <?php if ($paciente): ?>
+           
+            <p><strong>Foto do Paciente:</strong><br>
+            <img src="<?= $imagemPath ?>" alt="Foto do paciente" style="max-width: 200px;">
+
+
             <p><strong>ID:</strong> <?= $paciente['id'] ?></p>
             <p><strong>Nome:</strong> <?= $paciente['nome'] ?></p>
             <p><strong>Idade:</strong> <?= $paciente['idade'] ?></p>
             <p><strong>Tipo Sanguineo:</strong> <?= $paciente['tipo_sangue'] ?></p>
-            
             <p><strong>Usuário Associado:</strong> <?= $paciente['username'] ?></p>
             <p>
                 <a href="edit-paciente.php?id=<?= $paciente['id'] ?>">Editar</a>

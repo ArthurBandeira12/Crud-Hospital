@@ -15,12 +15,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $data_nascimento = $_POST['data_nascimento'];
     $tipo_sangue = $_POST['tipo_sangue'];
 
-    $stmt = $pdo->prepare("UPDATE pacientes SET nome = ?, idade = ?, data_nascimento = ?, tipo_sangue = ? WHERE id = ?");
-    $stmt->execute([$nome, $idade, $data_nascimento, $tipo_sangue, $id]);
+    
+    $stmt = $pdo->prepare("SELECT imagem_id FROM pacientes WHERE id = ?");
+    $stmt->execute([$id]);
+    $pacienteAtual = $stmt->fetch(PDO::FETCH_ASSOC);
+    $imagem_id = $pacienteAtual['imagem_id'] ?? null;
+
+    
+    if (!empty($_FILES['imagem']['name'])) {
+        $extensao = strtolower(pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION));
+        $permitidas = ['jpg', 'jpeg', 'png', 'webp'];
+
+        if (in_array($extensao, $permitidas)) {
+            $novoNome = uniqid() . '.' . $extensao;
+            $destino = __DIR__ . '/storage/' . $novoNome;
+
+            if (move_uploaded_file($_FILES['imagem']['tmp_name'], $destino)) {
+                $stmt = $pdo->prepare("INSERT INTO imagens (path) VALUES (?)");
+                $stmt->execute([$novoNome]);
+                $imagem_id = $pdo->lastInsertId();
+            }
+        }
+    }
+
+  
+    $stmt = $pdo->prepare("UPDATE pacientes SET nome = ?, idade = ?, data_nascimento = ?, tipo_sangue = ?, imagem_id = ? WHERE id = ?");
+    $stmt->execute([$nome, $idade, $data_nascimento, $tipo_sangue, $imagem_id, $id]);
 
     header("Location: index-paciente.php");
     exit();
 }
+
 
 $stmt = $pdo->prepare("SELECT * FROM pacientes WHERE id = ?");
 $stmt->execute([$id]);
@@ -30,6 +55,20 @@ if (!$paciente) {
     echo "Paciente não encontrado.";
     exit();
 }
+
+
+$imagemPath = '/storage/imagemusuario.webp';
+
+if (!empty($paciente['imagem_id'])) {
+    $stmt = $pdo->prepare("SELECT path FROM imagens WHERE id = ?");
+    $stmt->execute([$paciente['imagem_id']]);
+    $imagem = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($imagem) {
+        
+        $imagemPath = '/storage/' . $imagem['path'] . '?v=' . time();
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -40,7 +79,7 @@ if (!$paciente) {
 </head>
 <body>
     <h1>Editar Paciente</h1>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <label for="nome">Nome:</label>
         <input type="text" name="nome" id="nome" value="<?= $paciente['nome'] ?>" required>
 
@@ -60,6 +99,9 @@ if (!$paciente) {
             }
             ?>
         </select>
+
+        <label for="imagem">Imagem paciente:</label>
+        <input type="file" name="imagem" id="imagem" accept="image/*">
 
         <button type="submit">Salvar</button>
     </form>

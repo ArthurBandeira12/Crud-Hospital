@@ -39,3 +39,15 @@ CREATE TABLE consultas(
     FOREIGN KEY (medicos_id) REFERENCES medicos(id) ON DELETE SET NULL,
     FOREIGN KEY (pacientes_id) REFERENCES pacientes(id) ON DELETE SET NULL
 );
+
+
+CREATE TABLE imagens(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    path VARCHAR(200) NOT NULL
+
+);
+
+ALTER TABLE pacientes
+ADD COLUMN imagem_id INT NULL,
+ADD CONSTRAINT fk_paciente_imagem
+  FOREIGN KEY (imagem_id) REFERENCES imagens(id) ON DELETE SET NULL;
