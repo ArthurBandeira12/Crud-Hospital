@@ -4,26 +4,16 @@ require_once 'authenticate.php';
 
 $id = $_GET['id'];
 
-$stmt = $pdo->prepare("SELECT pacientes.*, usuarios.username FROM pacientes LEFT JOIN usuarios ON pacientes.usuario_id = usuarios.id WHERE pacientes.id = ?");
+$stmt = $pdo->prepare("SELECT pacientes.*, usuarios.username, imagens.path FROM pacientes LEFT JOIN usuarios ON pacientes.usuario_id = usuarios.id LEFT JOIN imagens ON pacientes.imagem_id = imagens.id WHERE pacientes.id = ?");
 $stmt->execute([$id]);
 $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$imagemPath = '../storage/imagemusuario.webp';
 
-if (!empty($paciente['imagem_id'])) {
-    $stmtImagem = $pdo->prepare("SELECT path FROM imagens WHERE id = ?");
-    $stmtImagem->execute([$paciente['imagem_id']]);
-    $imagem = $stmtImagem->fetch(PDO::FETCH_ASSOC);
-    if ($imagem) {
-        
-        $imagemPath = '../storage/' . $imagem['path'] . '?v=' . time();
-    }
+if ($paciente['path']) {
+    $imagemPath = '/storage/' . $paciente['path'];
+} else {
+    $imagemPath = '/storage/imagemusuario.webp';
 }
-
-
-
-
-
 
 
 

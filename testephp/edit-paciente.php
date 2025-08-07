@@ -9,44 +9,6 @@ if (!$id) {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nome = $_POST['nome'];
-    $idade = $_POST['idade'];
-    $data_nascimento = $_POST['data_nascimento'];
-    $tipo_sangue = $_POST['tipo_sangue'];
-
-    
-    $stmt = $pdo->prepare("SELECT imagem_id FROM pacientes WHERE id = ?");
-    $stmt->execute([$id]);
-    $pacienteAtual = $stmt->fetch(PDO::FETCH_ASSOC);
-    $imagem_id = $pacienteAtual['imagem_id'] ?? null;
-
-    
-    if (!empty($_FILES['imagem']['name'])) {
-        $extensao = strtolower(pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION));
-        $permitidas = ['jpg', 'jpeg', 'png', 'webp'];
-
-        if (in_array($extensao, $permitidas)) {
-            $novoNome = uniqid() . '.' . $extensao;
-            $destino = __DIR__ . '/storage/' . $novoNome;
-
-            if (move_uploaded_file($_FILES['imagem']['tmp_name'], $destino)) {
-                $stmt = $pdo->prepare("INSERT INTO imagens (path) VALUES (?)");
-                $stmt->execute([$novoNome]);
-                $imagem_id = $pdo->lastInsertId();
-            }
-        }
-    }
-
-  
-    $stmt = $pdo->prepare("UPDATE pacientes SET nome = ?, idade = ?, data_nascimento = ?, tipo_sangue = ?, imagem_id = ? WHERE id = ?");
-    $stmt->execute([$nome, $idade, $data_nascimento, $tipo_sangue, $imagem_id, $id]);
-
-    header("Location: index-paciente.php");
-    exit();
-}
-
-
 $stmt = $pdo->prepare("SELECT * FROM pacientes WHERE id = ?");
 $stmt->execute([$id]);
 $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -57,17 +19,45 @@ if (!$paciente) {
 }
 
 
-$imagemPath = '/storage/imagemusuario.webp';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $stmt = $pdo->prepare("SELECT imagem_id FROM pacientes WHERE id = ?");
+    $nome = $_POST['nome'];
+    $idade = $_POST['idade'];
+    $data_nascimento = $_POST['data_nascimento'];
+    $tipo_sangue = $_POST['tipo_sangue'];
+    $imagem_id = $paciente['imagem_id'];
 
-if (!empty($paciente['imagem_id'])) {
-    $stmt = $pdo->prepare("SELECT path FROM imagens WHERE id = ?");
-    $stmt->execute([$paciente['imagem_id']]);
-    $imagem = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($imagem) {
+    
+    $stmt->execute([$id]);
+    $pacienteAtual = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    
+    if (!empty($_FILES['imagem']['name'])) {
+        $extensao = pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION);
+        $novoNome = uniqid() . '.' . $extensao;
+        $caminho = __DIR__ . '/../storage/' . $novoNome;
+
         
-        $imagemPath = '/storage/' . $imagem['path'] . '?v=' . time();
+        if (move_uploaded_file($_FILES['imagem']['tmp_name'], $caminho)) {
+            
+            $stmt = $pdo->prepare("INSERT INTO imagens (path) VALUES (?)");
+            $stmt->execute([$novoNome]);
+            $imagem_id = $pdo->lastInsertId();
+        }
     }
+
+  
+    $stmt = $pdo->prepare("UPDATE pacientes SET nome = ?, idade = ?, data_nascimento = ?, tipo_sangue = ?, imagem_id = ? WHERE id = ?");
+    $stmt->execute([$nome, $idade, $data_nascimento, $tipo_sangue, $imagem_id, $id]);
+
+    header('Location: ../index.php');
+    exit();
 }
+
+
+
+
+
 
 ?>
 

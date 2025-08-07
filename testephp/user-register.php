@@ -13,8 +13,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     } else {
         $stmt = $pdo->prepare("INSERT INTO usuarios (username, password) VALUES (?, ?)");
         if($stmt->execute([$username, $password])){
-            echo "Usuario registrado com sucesso!";
             header('Location: user-login.php');
+            echo "Usuario registrado com sucesso!";
         } else{
             echo "Erro ao registrar usuario.";
         }

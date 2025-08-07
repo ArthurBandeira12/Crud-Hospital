@@ -1,6 +1,7 @@
-    <?php 
-    session_start();
-    require_once 'dbteste.php';
+<?php 
+
+require_once 'dbteste.php';
+require_once 'authenticate.php';
 
 
 
@@ -10,28 +11,33 @@
         $data_nascimento = $_POST['data_nascimento'];
         $tipo_sangue = $_POST['tipo_sangue'];
         $usuario_id = $_SESSION['user_id'];
-        $imagem_id = 1;
         
         
-        if (!empty($_FILES["imagem"]["name"])) {
-            $extensao = strtolower(pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION));
-            $permitidas = ['jpg', 'jpeg', 'png', 'webp'];
-
-            if (in_array($extensao, $permitidas)) {
-                $novoNome = uniqid() . '.' . $extensao;
-                $destino = __DIR__ . '/storage/' . $novoNome;
-
-                if (move_uploaded_file($_FILES['imagem']['tmp_name'], $destino)) {
-                    $stmt = $pdo->prepare("INSERT INTO imagens (path) VALUES (?)");
-                    $stmt->execute([$novoNome]);
-                    $imagem_id = $pdo->lastInsertId();
-                }
+        
+        if (!empty($_FILES['imagem']['name'])) {
+            $extensao = pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION);
+            $novoNome = uniqid() . '.' . $extensao;
+            $caminho = __DIR__ . '/../storage/' . $novoNome;
+    
+            // Mover o arquivo para a pasta storage
+            if (move_uploaded_file($_FILES['imagem']['tmp_name'], $caminho)) {
+                // Inserir o caminho da imagem na tabela imagens
+                $stmt = $pdo->prepare("INSERT INTO imagens (path) VALUES (?)");
+                $stmt->execute([$novoNome]);
+                $imagem_id = $pdo->lastInsertId();
             }
+        } else {
+            $imagem_id = null;
         }
 
         $stmt = $pdo->prepare("INSERT INTO pacientes(nome, idade, data_nascimento, tipo_sangue, usuario_id, imagem_id) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$nome, $idade, $data_nascimento, $tipo_sangue, $usuario_id, $imagem_id]);
+
+        
+     header('Location: index-paciente.php');
+      exit();
     }
+
 
 
     
@@ -89,7 +95,4 @@
     </main>
     </body>
 
-    </html>
-
-
-        
+    </html

@@ -21,7 +21,7 @@ $medicos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <h1>Lista de Medicos</h1>
         <nav>
             <ul>
-                <li><a href="index.php">Home</a></li>
+                <li><a href="../index.php">Home</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li>Pacientes: 
                         <a href="/testephp/criarpaciente.php">Adicionar</a> | 
@@ -57,8 +57,8 @@ $medicos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?= $medico['especialidade'] ?></td>
                         <td><?= $medico['username'] ?></td>
                         <td>
-                            <a href="read-medico.php?id=<?= $medico['id'] ?>">Visualizar</a>
-                            <a href="update-medico.php?id=<?= $medico['id'] ?>">Editar</a>
+                            <a href="visu-medico.php?id=<?= $medico['id'] ?>">Visualizar</a>
+                            <a href="edit-medico.php?id=<?= $medico['id'] ?>">Editar</a>
                             <a href="delete-medico.php?id=<?= $medico['id'] ?>" onclick="return confirm('Tem certeza que deseja excluir este medico?');">Excluir</a>
                         </td>
                     </tr>

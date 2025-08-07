@@ -43,6 +43,7 @@ session_start();
     <main>
         <h2>Bem-vindo ao Hospital</h2>
         <p>Utilize o menu de acordo com oque vc precisar</p>
+        <img src="./storage/logoImagem Hospital.png" alt="teste">
     </main>
 
     <footer>

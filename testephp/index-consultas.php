@@ -52,6 +52,7 @@ $consultas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
             <?php endforeach; ?>
         </tbody>
+        <a href="../index.php"><button>Home</button></a>
     </table>
 </body>
 </html>
